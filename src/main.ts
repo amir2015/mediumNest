@@ -1,4 +1,4 @@
-if (process.env.IS_TS_NODE !== 'production') {
+if (process.env.IS_TS_N !== 'production') {
   require('module-alias/register');
 }
 import { NestFactory } from '@nestjs/core';
