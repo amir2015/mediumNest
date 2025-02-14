@@ -4,23 +4,12 @@ import { AppService } from './app.service';
 import { TagsModule } from './tags/tags.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './user/user.module';
+import { User } from './user/entities/user.entity';
+import ormConfig from './ormconfig';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Makes .env available globally
-    }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT, 10),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      autoLoadEntities: true,
-    }),
-    TagsModule,
-  ],
+  imports: [TagsModule, UserModule, TypeOrmModule.forRoot(ormConfig)],
   controllers: [AppController],
   providers: [AppService],
 })
