@@ -1,13 +1,5 @@
 import { DataSource } from 'typeorm';
+import ormConfig from './ormconfig';
 
-export default new DataSource({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'postgres',
-  database: 'mediumnest',
-  entities: [__dirname + '/**/*.entity{ts,.js}'],
-  synchronize: false,
-  migrations: [__dirname + '/migrations/**/*{ts,.js}'],
-});
+
+export default new DataSource(ormConfig);
