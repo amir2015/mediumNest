@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,10 +11,18 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
   async registerUser(registerUserDto: RegisterUserDto) {
+    const userExist = await this.userRepository.findOne({
+      where: { email: registerUserDto.email },
+    });
+    if (userExist) {
+      throw new HttpException(
+        'Email already exist',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
     const user = new User();
     Object.assign(user, registerUserDto);
     return await this.userRepository.save(user);
-
   }
   generateJwtToken(user: User): string {
     return sign(
@@ -24,7 +32,7 @@ export class UserService {
         username: user.username,
         image: user.image,
       },
-      "secret",
+      'secret',
       { expiresIn: '2d' },
     );
   }
