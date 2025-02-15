@@ -33,7 +33,10 @@ export class UserService {
   }
   async loginUser(loginUserDto: LoginUserDto): Promise<User> {
     const { email, password } = loginUserDto;
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'username', 'password', 'image'],
+    });
     if (!user) {
       throw new NotFoundException('User Not found');
     }
@@ -41,6 +44,7 @@ export class UserService {
     if (!isPasswordValid) {
       throw new NotFoundException('Credentials not valid, please try again');
     }
+    delete user.password;
     return user;
   }
   generateJwtToken(user: User): string {
