@@ -1,9 +1,16 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { sign } from 'jsonwebtoken';
+import { LoginUserDto } from './dto/login-user.dto';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -23,6 +30,18 @@ export class UserService {
     const user = new User();
     Object.assign(user, registerUserDto);
     return await this.userRepository.save(user);
+  }
+  async loginUser(loginUserDto: LoginUserDto): Promise<User> {
+    const { email, password } = loginUserDto;
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User Not found');
+    }
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new NotFoundException('Credentials not valid, please try again');
+    }
+    return user;
   }
   generateJwtToken(user: User): string {
     return sign(
