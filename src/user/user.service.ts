@@ -70,4 +70,9 @@ export class UserService {
       },
     };
   }
+  async updateUser(userId: number, updateUserDto: any) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    Object.assign(user, updateUserDto);
+    return this.userRepository.save(user);
+  }
 }
