@@ -1,11 +1,13 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserResponse } from './types/userResponse.interface';
 import { hash } from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
+import { request } from 'http';
+import { ExpressRequest } from 'src/types/expressRequest.interface';
 
-@Controller('users')
+@Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -25,5 +27,9 @@ export class UserController {
   ): Promise<UserResponse> {
     const user = await this.userService.loginUser(loginUserDto);
     return this.userService.buildResponse(user);
+  }
+  @Get('users/me')
+  async currentUser(@Req() request: ExpressRequest): Promise<any> {
+    return this.userService.buildResponse(request.user);
   }
 }

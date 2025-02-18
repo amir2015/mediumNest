@@ -47,6 +47,9 @@ export class UserService {
     delete user.password;
     return user;
   }
+  async findUserById(id: number): Promise<User> {
+    return this.userRepository.findOne({ where: { id } });
+  }
   generateJwtToken(user: User): string {
     return sign(
       {
