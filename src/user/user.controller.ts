@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, UseGuards } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserResponse } from './types/userResponse.interface';
@@ -6,6 +6,7 @@ import { hash } from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ExpressRequest } from 'src/types/expressRequest.interface';
 import { User } from './decorators/user.decorators';
+import { AuthGuard } from './dto/guards/auth.guard';
 
 @Controller()
 export class UserController {
@@ -29,6 +30,7 @@ export class UserController {
     return this.userService.buildResponse(user);
   }
   @Get('users/me')
+@UseGuards(AuthGuard)
   async currentUser(
     @Req() request: ExpressRequest,
     @User() user: any,
