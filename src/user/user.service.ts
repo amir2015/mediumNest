@@ -1,9 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { sign } from 'jsonwebtoken';
+import { LoginUserDto } from './dto/login-user.dto';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -11,10 +18,37 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
   async registerUser(registerUserDto: RegisterUserDto) {
+    const userExist = await this.userRepository.findOne({
+      where: { email: registerUserDto.email },
+    });
+    if (userExist) {
+      throw new HttpException(
+        'Email already exist',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
     const user = new User();
     Object.assign(user, registerUserDto);
     return await this.userRepository.save(user);
-
+  }
+  async loginUser(loginUserDto: LoginUserDto): Promise<User> {
+    const { email, password } = loginUserDto;
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'username', 'password', 'image'],
+    });
+    if (!user) {
+      throw new NotFoundException('User Not found');
+    }
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new NotFoundException('Credentials not valid, please try again');
+    }
+    delete user.password;
+    return user;
+  }
+  async findUserById(id: number): Promise<User> {
+    return this.userRepository.findOne({ where: { id } });
   }
   generateJwtToken(user: User): string {
     return sign(
@@ -24,7 +58,7 @@ export class UserService {
         username: user.username,
         image: user.image,
       },
-      "secret",
+      'secret',
       { expiresIn: '2d' },
     );
   }
@@ -35,5 +69,10 @@ export class UserService {
         token: this.generateJwtToken(user),
       },
     };
+  }
+  async updateUser(userId: number, updateUserDto: any) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    Object.assign(user, updateUserDto);
+    return this.userRepository.save(user);
   }
 }

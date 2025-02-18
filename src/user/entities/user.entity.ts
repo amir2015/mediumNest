@@ -10,7 +10,7 @@ export class User {
   email: string;
   @Column({ default: '' })
   image: string;
-  @Column()
+  @Column({ select: false })
   password: string;
   @BeforeInsert()
   async hashPassword() {
