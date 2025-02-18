@@ -4,8 +4,8 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { UserResponse } from './types/userResponse.interface';
 import { hash } from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
-import { request } from 'http';
 import { ExpressRequest } from 'src/types/expressRequest.interface';
+import { User } from './decorators/user.decorators';
 
 @Controller()
 export class UserController {
@@ -29,7 +29,11 @@ export class UserController {
     return this.userService.buildResponse(user);
   }
   @Get('users/me')
-  async currentUser(@Req() request: ExpressRequest): Promise<any> {
+  async currentUser(
+    @Req() request: ExpressRequest,
+    @User() user: any,
+  ): Promise<any> {
+    console.log(user);
     return this.userService.buildResponse(request.user);
   }
 }
