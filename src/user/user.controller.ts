@@ -18,7 +18,6 @@ import { AuthGuard } from './dto/guards/auth.guard';
 import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Controller()
-@UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -39,6 +38,7 @@ export class UserController {
     const user = await this.userService.loginUser(loginUserDto);
     return this.userService.buildResponse(user);
   }
+  @UseGuards(AuthGuard)
   @Get('users/me')
   async currentUser(
     @Req() request: ExpressRequest,
