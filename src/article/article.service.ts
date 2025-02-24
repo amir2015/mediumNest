@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -40,5 +40,38 @@ export class ArticleService {
   }
   async getArticleBySlug(slug: string) {
     return await this.articleRepository.findOne({ where: { slug } });
+  }
+  async deleteArticle(slug: string, userId: number) {
+    const article = await this.getArticleBySlug(slug);
+    if (!article) {
+      throw new HttpException('Article not found', 404);
+    }
+    if (article.author.id !== userId) {
+      throw new HttpException('You are not the author', 403);
+    }
+    return await this.articleRepository.delete({ slug });
+  }
+
+  async updateArticle(
+    slug: string,
+    updateArticleDto: UpdateArticleDto,
+    userId: number,
+  ): Promise<Article> {
+    const article = await this.getArticleBySlug(slug);
+
+    console.log('article ======>',article.author.id);
+
+    if (!article) {
+      throw new HttpException('Article not found', 404);
+    }
+    if (article.author.id !== userId) {
+      throw new HttpException('You are not the author', 403);
+    }
+
+    Object.assign(article, updateArticleDto);
+    article.slug = this.generateSlug(article.title);
+
+    return this.articleRepository.save(article);
+
   }
 }

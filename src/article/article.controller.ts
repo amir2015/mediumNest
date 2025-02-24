@@ -14,6 +14,7 @@ import { AuthGuard } from 'src/user/dto/guards/auth.guard';
 import { User as UserDecorator } from 'src/user/decorators/user.decorators';
 import { User } from 'src/user/entities/user.entity';
 import { ArticleResponse } from './types/articleResponse.interface';
+import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article } from './entities/article.entity';
 
 @Controller('articles')
@@ -37,5 +38,26 @@ export class ArticleController {
   async getArticle(@Param('slug') slug: string): Promise<ArticleResponse> {
     const article = await this.articleService.getArticleBySlug(slug);
     return this.articleService.buildArticleResponse(article);
+  }
+  @Delete(':slug')
+  @UseGuards(AuthGuard)
+  async deleteArticle(
+    @UserDecorator('id') userId: number,
+    @Param('slug') slug: string,
+  ) {
+    return await this.articleService.deleteArticle(slug, userId);
+  }
+  @Patch(':slug')
+  @UseGuards(AuthGuard)
+  async updateArticle(
+    @UserDecorator('id') userId: number,
+    @Param('slug') slug: string,
+    @Body('article') updateArticleDto: UpdateArticleDto,
+  ): Promise<Article> {
+    return await this.articleService.updateArticle(
+      slug,
+      updateArticleDto,
+      userId,
+    );
   }
 }

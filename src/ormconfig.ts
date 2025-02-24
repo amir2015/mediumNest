@@ -9,10 +9,8 @@ const ormConfig: DataSourceOptions = {
   username: 'postgres',
   password: '123',
   database: 'mediumnest',
-  entities: [ User,Article],
+  entities: [User, Article],
   synchronize: true,
-  logging: true,
-  
 };
 
 export default ormConfig;
