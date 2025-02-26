@@ -106,4 +106,24 @@ export class ArticleService {
     const articles = await queryBuilder.getMany();
     return { articles, articlesCount };
   }
+  async favoriteArticle(slug: string, userId: number): Promise<Article> {
+    const article = await this.getArticleBySlug(slug);
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favorites'],
+    });
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+    const isNotFavorited = user.favorites.every(
+      (favorite) => favorite.id !== article.id,
+    );
+    if (isNotFavorited) {
+      user.favorites.push(article);
+      article.favoritesCount++;
+      await this.userRepository.save(user);
+      await this.articleRepository.save(article);
+    }
+    return article;
+  }
 }
