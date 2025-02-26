@@ -10,6 +10,6 @@ import { AuthGuard } from './dto/guards/auth.guard';
   imports: [TypeOrmModule.forFeature([User]), ConfigModule],
   controllers: [UserController],
   providers: [UserService, AuthGuard],
-  exports: [UserService],
+  exports: [UserService, TypeOrmModule],
 })
 export class UserModule {}

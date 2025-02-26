@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -59,5 +60,10 @@ export class ArticleController {
       updateArticleDto,
       userId,
     );
+  }
+
+  @Get()
+  async findAll(@UserDecorator('id') userId: number, @Query() query: any) {
+    return await this.articleService.findAll(userId, query);
   }
 }

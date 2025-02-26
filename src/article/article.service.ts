@@ -3,16 +3,20 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Article } from './entities/article.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { ArticleResponse } from './types/articleResponse.interface';
 import slugify from 'slugify';
+import { ArticlesResponse } from './types/articlesResponse.interface';
 
 @Injectable()
 export class ArticleService {
   constructor(
     @InjectRepository(Article)
     private articleRepository: Repository<Article>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private dataSource: DataSource,
   ) {}
 
   async createArticle(
@@ -59,7 +63,7 @@ export class ArticleService {
   ): Promise<Article> {
     const article = await this.getArticleBySlug(slug);
 
-    console.log('article ======>',article.author.id);
+    console.log('article ======>', article.author.id);
 
     if (!article) {
       throw new HttpException('Article not found', 404);
@@ -68,10 +72,38 @@ export class ArticleService {
       throw new HttpException('You are not the author', 403);
     }
 
+    if (updateArticleDto.title && article.title !== updateArticleDto.title) {
+      article.slug = this.generateSlug(updateArticleDto.title);
+    }
     Object.assign(article, updateArticleDto);
-    article.slug = this.generateSlug(article.title);
 
     return this.articleRepository.save(article);
-
+  }
+  async findAll(userId: number, query: any): Promise<ArticlesResponse> {
+    const queryBuilder = this.dataSource
+      .getRepository(Article)
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.author', 'author');
+    if (query.tag) {
+      queryBuilder.andWhere('article.tagList LIKE :tag', {
+        tag: `%${query.tag}%`,
+      });
+    }
+    if (query.author) {
+      const author = await this.userRepository.findOne({
+        where: { username: query.author },
+      });
+      queryBuilder.andWhere('article.authorId = :id', { id: author.id });
+    }
+    queryBuilder.orderBy('article.createdAt', 'DESC');
+    const articlesCount = await queryBuilder.getCount();
+    if (query.limit) {
+      queryBuilder.limit(query.limit);
+    }
+    if (query.offset) {
+      queryBuilder.offset(query.offset);
+    }
+    const articles = await queryBuilder.getMany();
+    return { articles, articlesCount };
   }
 }
