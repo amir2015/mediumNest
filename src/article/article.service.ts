@@ -95,6 +95,18 @@ export class ArticleService {
       });
       queryBuilder.andWhere('article.authorId = :id', { id: author.id });
     }
+    if (query.favorited) {
+      const user = await this.userRepository.findOne({
+        where: { username: query.favorited },
+        relations: ['favorites'],
+      });
+      const ids = user.favorites.map((favorite) => favorite.id);
+      if (ids.length > 0) {
+        queryBuilder.andWhere('article.id IN (:...ids)', { ids });
+      } else {
+        queryBuilder.andWhere('1=0');
+      }
+    }
     queryBuilder.orderBy('article.createdAt', 'DESC');
     const articlesCount = await queryBuilder.getCount();
     if (query.limit) {
@@ -141,7 +153,7 @@ export class ArticleService {
       await this.userRepository.save(user);
       await this.articleRepository.save(article);
     }
-    
+
     return article;
   }
 }
