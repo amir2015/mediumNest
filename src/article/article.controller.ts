@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   Query,
 } from '@nestjs/common';
@@ -17,6 +16,7 @@ import { User } from 'src/user/entities/user.entity';
 import { ArticleResponse } from './types/articleResponse.interface';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article } from './entities/article.entity';
+import { Delete } from '@nestjs/common';
 
 @Controller('articles')
 export class ArticleController {
@@ -71,8 +71,17 @@ export class ArticleController {
   async favoriteArticle(
     @UserDecorator('id') userId: number,
     @Param('slug') slug: string,
-  ):Promise<ArticleResponse> {
-    const article= await this.articleService.favoriteArticle(slug, userId);
+  ): Promise<ArticleResponse> {
+    const article = await this.articleService.favoriteArticle(slug, userId);
+    return this.articleService.buildArticleResponse(article);
+  }
+  @Delete(':slug/favorite')
+  @UseGuards(AuthGuard)
+  async unFavoriteArticle(
+    @UserDecorator('id') userId: number,
+    @Param('slug') slug: string,
+  ): Promise<ArticleResponse> {
+    const article = await this.articleService.unFavouriteArticle(slug, userId);
     return this.articleService.buildArticleResponse(article);
   }
 }
