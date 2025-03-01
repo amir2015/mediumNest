@@ -56,6 +56,29 @@ export class ProfileService {
     }
     return { ...profileUser, following: true };
   }
+  async unfollowProfile(
+    currentUserId: number,
+    profileUsername: string,
+  ): Promise<ProfileType> {
+    const profileUser = await this.userRepository.findOne({
+      where: { username: profileUsername },
+    });
+    if (!profileUser) {
+      throw new HttpException('Profile not found', 404);
+    }
+    if (currentUserId === profileUser.id) {
+      throw new HttpException(
+        'Follower and followed user cannot be the same',
+        400,
+      );
+    }
+    await this.followRepository.delete({
+      followerId: currentUserId,
+      followingId: profileUser.id,
+    });
+
+    return { ...profileUser, following: false };
+  }
   async buildProfileResponse(profile: any) {
     return {
       profile,
