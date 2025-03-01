@@ -1,5 +1,14 @@
 import { hash } from 'bcrypt';
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Article } from 'src/article/entities/article.entity';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -18,4 +27,11 @@ export class User {
   }
   @Column({ default: '' })
   bio: string;
+
+  @OneToMany(() => Article, (article) => article.author)
+  articles: Article[];
+
+  @ManyToMany(() => Article)
+  @JoinTable()
+  favorites: Article[];
 }

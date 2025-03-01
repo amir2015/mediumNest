@@ -1,5 +1,6 @@
 import { DataSourceOptions } from 'typeorm';
 import { User } from './user/entities/user.entity';
+import { Article } from './article/entities/article.entity';
 
 const ormConfig: DataSourceOptions = {
   type: 'postgres',
@@ -8,11 +9,8 @@ const ormConfig: DataSourceOptions = {
   username: 'postgres',
   password: '123',
   database: 'mediumnest',
-  entities: [ User],
+  entities: [User, Article],
   synchronize: true,
-  migrations: ['src/migrations/*.ts'],
-  logging: true,
-
 };
 
 export default ormConfig;
