@@ -17,6 +17,7 @@ import { ArticleResponse } from './types/articleResponse.interface';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Article } from './entities/article.entity';
 import { Delete } from '@nestjs/common';
+import { ArticlesResponse } from './types/articlesResponse.interface';
 
 @Controller('articles')
 export class ArticleController {
@@ -83,5 +84,13 @@ export class ArticleController {
   ): Promise<ArticleResponse> {
     const article = await this.articleService.unFavouriteArticle(slug, userId);
     return this.articleService.buildArticleResponse(article);
+  }
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  async getFeed(
+    @UserDecorator('id') userId: number,
+    @Query() query: any,
+  ): Promise<ArticlesResponse> {
+    return await this.articleService.getFeed(userId, query);
   }
 }
